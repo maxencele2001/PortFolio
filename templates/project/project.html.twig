@@ -1,4 +1,16 @@
 {% extends "base.html.twig" %}
 {% block body %}
-    <a href="{{ project.link }}" class="btn btn-primary">More information</a>
+    <a href="{{ project.link }}" class="btn btn-primary">Git Repository</a>
+    {% for comment in all %}
+        <h3>Commentaire : {{comment['comment'].content}}</h3>
+        {% for reply in comment['replies'] %}
+            <p>Reponses : {{reply.content}}</p>
+        {% endfor %}
+    {% endfor %}
+
+<div class="container">
+    {{ form_start(form) }}
+    {{ form_row(form.content) }}
+    {{ form_end(form) }}
+</div>
 {% endblock %}

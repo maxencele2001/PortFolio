@@ -2,7 +2,10 @@
 
 namespace App\Entity;
 
+use App\Entity\Traits\IdTrait;
 use App\Repository\ProjectRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Cocur\Slugify\Slugify;
 
@@ -11,12 +14,7 @@ use Cocur\Slugify\Slugify;
  */
 class Project
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    use IdTrait;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -38,9 +36,14 @@ class Project
      */
     private $display;
 
-    public function getId(): ?int
+    /**
+     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="project")
+     */
+    private $comments;
+
+    public function __construct()
     {
-        return $this->id;
+        $this->comments = new ArrayCollection();
     }
 
     public function getTitle(): ?string
@@ -94,5 +97,35 @@ class Project
     public function getSlug():string
     {
         return (new Slugify())->slugify($this->title);
+    }
+
+    /**
+     * @return Collection|Comment[]
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments[] = $comment;
+            $comment->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getProject() === $this) {
+                $comment->setProject(null);
+            }
+        }
+
+        return $this;
     }
 }
